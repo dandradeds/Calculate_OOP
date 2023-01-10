@@ -1,268 +1,227 @@
 class CalcController {
-
     constructor(){
-        this.lastOperator = ''
-        this.lastNumber = ''
-        this._operation = [];
-        this._locale = 'pt-BR';
-        this._displayCalcEl = document.querySelector("#display");
-        this._dateEl = document.querySelector("#data");
-        this._timeEl = document.querySelector("#hora");
-        this._currentDate;
-        this.initialize();
-        this.initButtonsEvents();
 
-    }
+        this._lastOperator = ''
+        this._lastNumber = ''
 
-    initialize(){
-
-        
-        this.setDisplayDateTime()
-        
-        setInterval(()=>{
-            
-            this.setDisplayDateTime();
-            
-        }, 1000); //Iniciando o meu relogio, contando de 1 em 1 segundo
-        
-        this.setLastNumberToDisplay()
+        this._operation = []
+        this._locale = 'pt-BR'
+        this._displayCalcEl = document.querySelector("#display")
+        this._dateEl = document.querySelector("#data")
+        this._timeEl = document.querySelector("#hora")
+        this._displayCalc 
+        this._currentDate
+        this.initialize()
+        this.initButtonsEvents()
     }
 
     addEventListenerAll(element, events, fn){
 
         events.split(' ').forEach(event => {
-
-            element.addEventListener(event, fn, false);
+            
+            element.addEventListener(event, fn, false)
 
         })
-    
-    } //TODO
+
+    }
 
     clearAll(){
-        
-        this._operation = [];
-        
-        this.setLastNumberToDisplay()
 
-    } //função atribuida para limpar o meu array de operação 
+        this._operation = []
+
+        this.setLastNumberToDisplay()
+    }
 
     clearEntry(){
 
-        this._operation.pop();
+        this._operation.pop()
 
         this.setLastNumberToDisplay()
-
-    } //função atribuida para limpar a ultima entrada do meu array de operação
+    }
 
     getLastOperation(){
 
-        return this._operation[this._operation.length-1];
+        return this._operation[this._operation.length - 1]
 
-    } //obtendo a ultima posição do meu array
-
-    setLastOperation(value){
-
-        this._operation[this._operation.length-1] = value;
-
-    } //recebendo a ultima value na ultima posição do meu array
+    }
 
     isOperator(value){
+        return (['+','-','*','/','%'].indexOf(value) > -1)
+    }
 
-        return (['+', '-', '*', '%', '/'].indexOf(value) > -1);
-
-    } //TODO
+    setLastOperation(value){
+        this._operation[this._operation.length - 1] = value
+    }
 
     pushOperation(value){
 
-        this._operation.push(value); //Recebe meu value dentro do array
+        this._operation.push(value)
 
-        if (this._operation.length > 3) { //verifica se tem menos de 3 operação dentro do meu array
-
-            this.calc(); // menos de 3 operação = metodo calc 
+        if(this._operation.length > 3){
+            
+            this.calc()
 
         }
 
     }
 
     getResult(){
-        
-        return eval(this._operation.join("")) //junta tudo em uma string
-
+        return eval(this._operation.join(""))
     }
 
     calc(){
+        
+        let last = ""
 
-        let last = '';
+        this._lastOperator = this.getLastItem()
 
-        if(this._operation.length > 3){
-            last = this._operation.pop(); //guarda a ultima posição do meu array
-            
-
-            let _lastNumber = this.getResult() 
+        if(this._operation.length < 3){
+            let firstItem = this._operation[0]
+            this._operation = [firstItem, this._lastOperator, this._lastNumber]
+        
         }
 
-        let result = this.getResult(); //junta tudo em uma string
+        if(this._operation.length > 3){ 
+            last = this._operation.pop()
 
-        if('%' == last){
+            this._lastNumber = this.getResult()
 
-            result = result / 100 
+        } else if (this._operation.length == 3){
 
-            this._operation = [result]
+            this._lastNumber = this.getLastItem(false)
 
-        } else {
+        }
+
+        console.log('lastOperator', this._lastOperator,);
+        console.log('this._lastNumber', this._lastNumber);
+
+        let result = this.getResult()
+
+        if(last == '%'){
+
+           result = result / 100
             
-            this._operation = [result] //guarda result no meu array
+           this._operation = [result]
+
+        } else {        
+            
+            this._operation = [result] 
 
             if(last) this._operation.push(last)
 
         }
-         
-
+        this.setLastNumberToDisplay()
         
-
-        this.setLastNumberToDisplay(); //executa metodo abaixo 
-
     }
 
     getLastItem(isOperator = true){
-        
-        let lastItem; 
+        let lastItem;
 
-        for (let i = this._operation.length-1; i >= 0; i--){
+         for(let i = this._operation.length-1; i >= 0; i--){
 
-            if (isOperator) {
-
-            if(this.isOperator(this._operation[i])){
-                lastItem = this._operation[i];
-
-                break;
+            if(this.isOperator(this._operation[i]) == isOperator) {
+                lastItem = this._operation[i]
+                break
             }
-            
-        
-            } else {
-                
-            if(!this.isOperator(this._operation[i])){
-                lastItem = this._operation[i];
+         }
+         if(!lastItem){
 
-                    break;
-                }
-            }
-
-        }
-
-        return lastItem
+            lastItem = (isOperator) ? this._lastOperator : this._lastNumber
+         }
+         return lastItem
     }
 
     setLastNumberToDisplay(){
+        let lastNumber = this.getLastItem(false)
 
-        let lastNumber; 
+        if(!lastNumber) lastNumber = 0
 
-        for (let i = this._operation.length-1; i >= 0; i--){
-
-            if (!this.isOperator(this._operation[i])) {
-
-                lastNumber = this._operation[i];
-
-                break;
-
-            }
-
-        }
-
-        if(!lastNumber) lastNumber = 0; //Se lastNumber for vazio = 0
-
-        this.displayCalc = lastNumber; // displayCalc ira exibir meu ultimo numero na tela
-
+        this.displayCalc = lastNumber
     }
 
-    addOperation(value){
 
 
-        if (isNaN(this.getLastOperation())) { //Se a ultima operação não for um numero 
+    addOperation(value){ 
+        
+        if (isNaN(this.getLastOperation())){ 
+            
+            if(this.isOperator(value)){
+                this.setLastOperation(value)
 
-            if (this.isOperator(value)) {
+            } else if(isNaN(value)){
 
-                this.setLastOperation(value); //seta ela
+                console.log(value);
 
-                console.log('caiu aqui');
+            } else {
+                console.log('AAA');
+                this.pushOperation(value)
+                this.setLastNumberToDisplay()
 
-            } else if (isNaN(value)){ //entender melhor esse else if
+                }
+                
+        } else { 
 
-                console.log("outra coisa",value);
+            if(this.isOperator(value)){
 
-            } else { // Se for um numero 
-
-                this.pushOperation(value) //executa função metodo recebendo meu numero
-
-                this.setLastNumberToDisplay();
-
-            }
-
-        } else { //MAIS
-
-            if (this.isOperator(value)){  //SE for um operador 
-
-                this.pushOperation(value); //executa metodo push operador 
+                    this.pushOperation(value)             
 
             } else {
 
-                let newValue = this.getLastOperation().toString() + value.toString(); //salva valores em uma variavel e transforma em string
+                let newValue = this.getLastOperation().toString() + value.toString()
+                this.setLastOperation(parseInt(newValue))
 
-                this.setLastOperation(parseInt(newValue)); //transforma em int a ultima operação 
-
-                this.setLastNumberToDisplay(); //exibe na tela
-
+                this.setLastNumberToDisplay()
             }
+      
+        }       
 
-        }
-
+        console.log(this._operation);
     }
 
     setError(){
-
-        this.displayCalc = "Error";
-        
+        this.displayCalc = "ERROR"
     }
 
     execBtn(value){
 
-        switch (value) {
+        switch(value){
 
-            case 'ac':
-                this.clearAll();
-                break;
-
-            case 'ce':
-                this.clearEntry();
-                break;
-
-            case 'soma':
-                this.addOperation('+');
-                break;
-
-            case 'subtracao':
-                this.addOperation('-');
-                break;
-
-            case 'divisao':
-                this.addOperation('/');
-                break;
-
-            case 'multiplicacao':
-                this.addOperation('*');
-                break;
-
-            case 'porcento':
-                this.addOperation('%');
-                break;
-
-            case 'igual':
-                this.calc();
-                break;
-
-            case 'ponto':
-                this.addOperation('.');
-                break;
+            case 'ac' : {
+                this.clearAll()
+                break
+            }
+            case 'ce': {
+                this.clearEntry()
+                break
+            }
+            case 'soma': {
+                this.addOperation('+')
+                break
+            }
+            case 'subtracao': {
+                this.addOperation('-')
+                break
+            }
+            case 'divisao': {
+                this.addOperation('/')
+                break   
+            }
+            case 'multiplicacao': {
+                this.addOperation('*')
+                break
+            }
+            case 'porcento': {
+                this.addOperation('%')
+                break
+            }
+            case 'igual': {
+                this.calc()
+                break
+            }
+            case 'ponto': {
+                this.addOperation('.')
+                break
+            }
 
             case '0':
             case '1':
@@ -274,12 +233,15 @@ class CalcController {
             case '7':
             case '8':
             case '9':
-                this.addOperation(parseInt(value));
+                this.addOperation(parseInt(value))
                 break;
 
-            default:
-                this.setError();
-                break;
+            default: {
+                this.setError()
+                break
+            }
+
+
 
         }
 
@@ -287,85 +249,82 @@ class CalcController {
 
     initButtonsEvents(){
 
-        let buttons = document.querySelectorAll("#buttons > g, #parts > g");
+        let buttons = document.querySelectorAll("#buttons > g, #parts > g")
 
-        buttons.forEach((btn, index)=>{
+        buttons.forEach((btn, index) =>{
 
-            this.addEventListenerAll(btn, "click drag", e => {
+            this.addEventListenerAll(btn, 'click drag', e => {
 
-                let textBtn = btn.className.baseVal.replace("btn-","");
+                let textBtn = btn.className.baseVal.replace("btn-","")
 
-                this.execBtn(textBtn);
-
+                this.execBtn(textBtn)
             })
 
-            this.addEventListenerAll(btn, "mouseover mouseup mousedown", e => {
-
-                btn.style.cursor = "pointer";
-
+            this.addEventListenerAll(btn, "mouseover mouseup mousedown", e =>{
+                btn.style.cursor = "pointer"
             })
+
 
         })
 
     }
 
-    setDisplayDateTime(){
+    initialize(){
 
-        this.displayDate = this.currentDate.toLocaleDateString(this._locale, {
-            day: "2-digit",
-            month: "long",
-            year: "numeric"
-        });
-        this.displayTime = this.currentDate.toLocaleTimeString(this._locale);
+        this.setDisplayDateTime()
 
+        setInterval(()=> {
+            
+            this.setDisplayDateTime()
+
+        }, 1000)
+
+        this.setLastNumberToDisplay()
     }
 
+    setDisplayDateTime(){
+        this.displayDate = this.currentDate.toLocaleDateString(this._locale)
+        this.displayTime = this.currentDate.toLocaleTimeString(this._locale)
+    }
+
+
     get displayTime(){
-
-        return this._timeEl.innerHTML;
-
+        return this._timeEl.innerHTML
     }
 
     set displayTime(value){
-
-        return this._timeEl.innerHTML = value;
-
+        this._timeEl.innerHTML = value
     }
 
     get displayDate(){
-
-        return this._dateEl.innerHTML;
-
+        return this._dateEl.innerHTML
     }
 
     set displayDate(value){
-
-        return this._dateEl.innerHTML = value;
-
+        this._dateEl.innerHTML = value
     }
 
     get displayCalc(){
-
-        return this._displayCalcEl.innerHTML;
-
+        return this._displayCalcEl.innerHTML
     }
 
     set displayCalc(value){
-
-        this._displayCalcEl.innerHTML = value;
-
+        this._displayCalcEl.innerHTML = value
     }
 
     get currentDate(){
-
-        return new Date();
-
+        return new Date()
     }
 
     set currentDate(value){
-
-        this._currentDate = value;
-
+        this._currentDate = value
     }
 
+    get locale(){
+        return this._locale
+    }
+
+    set locale(value){
+        this._locale = value
+    }
 }
